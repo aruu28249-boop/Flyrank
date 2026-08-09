@@ -1,1 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Search Intelligence — Content Opportunity Scoring</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.7;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: #222;
+            background: #f7f7f7;
+        }
+
+        main {
+            background: white;
+            padding: 45px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 42px;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            margin-top: 45px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+
+        .abstract {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+        }
+
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        footer {
+            margin-top: 50px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<main>
+
+    <header>
+        <p>Machine Learning · Search Intelligence</p>
+
+        <h1>
+            Content Opportunity Scoring for Search Intelligence
+        </h1>
+
+        <p class="subtitle">
+            A baseline system for prioritizing content pages for human review
+            using observed Google Search performance signals.
+        </p>
+    </header>
+
+    <section class="abstract">
+        <h2>Abstract</h2>
+
+        <p>
+            This project asks which content pages should be prioritized for
+            review or refresh based on their observed Google Search performance.
+            The analysis uses the FlyRank Internship Warehouse and focuses on
+            the March 2026 data slice. A simple baseline score combines observed
+            search impressions and average search position to create a ranked
+            recommendation queue. The resulting system assigns each row a
+            priority score, reason code, and action label. The result is intended
+            as directional decision-support for human review rather than causal
+            evidence that refreshing a page will improve search performance.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>1. Introduction / Problem Statement</h2>
+
+        <p>
+            Content teams may have many pages that could potentially deserve
+            attention, but human review time is limited. This project supports
+            the decision of which pages should be inspected first.
+        </p>
+
+        <p>
+            The research question is:
+        </p>
+
+        <p class="highlight">
+            Which content pages should be prioritized for review or refresh
+            based on their observed Google Search performance?
+        </p>
+
+        <p>
+            The goal is not to automatically decide that a page should be
+            refreshed. Instead, the system creates a ranked queue that helps
+            a human reviewer decide where to look first.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>2. Data</h2>
+
+        <p>
+            This project uses the FlyRank Internship Warehouse dataset released
+            through Hugging Face. The primary table is
+            <code>fact_content_daily_performance</code>.
+        </p>
+
+        <p>
+            The analysis uses March 2026 as the development window. The data
+            contains one row per report date, pseudonymized client, and
+            pseudonymized content item.
+        </p>
+
+        <h3>Observed signals</h3>
+
+        <ul>
+            <li><code>gsc_impressions</code></li>
+            <li><code>gsc_clicks</code></li>
+            <li><code>gsc_avg_position</code></li>
+        </ul>
+
+        <p>
+            Future outcome information, label-derived fields, client-identifying
+            information, and other information that could introduce target
+            leakage were excluded.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>3. Methodology</h2>
+
+        <h3>Baseline approach</h3>
+
+        <p>
+            The baseline uses observed search performance to calculate a
+            priority score. Higher search impressions represent greater
+            observed search demand, while a higher average position number
+            represents more room for potential improvement under this baseline
+            framing.
+        </p>
+
+        <p>
+            The baseline score is:
+        </p>
+
+        <p class="highlight">
+            priority score = impressions × average position
+        </p>
+
+        <h3>Reason codes</h3>
+
+        <table>
+            <tr>
+                <th>Reason code</th>
+                <th>Action</th>
+            </tr>
+
+            <tr>
+                <td>HIGH_DEMAND_OPPORTUNITY</td>
+                <td>REVIEW_FOR_REFRESH</td>
+            </tr>
+
+            <tr>
+                <td>LOW_DEMAND</td>
+                <td>LOW_PRIORITY</td>
+            </tr>
+
+            <tr>
+                <td>STRONG_POSITION</td>
+                <td>MONITOR</td>
+            </tr>
+        </table>
+
+        <p>
+            The ranking uses only observed March 2026 signals. No future-window
+            or label-derived inputs are used in the baseline.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>4. Results</h2>
+
+        <p>
+            The baseline produces a ranked queue of content recommendations.
+            Each recommendation contains a priority score, reason code, and
+            action label.
+        </p>
+
+        <p>
+            The March 2026 development slice contains
+            <span class="highlight">9,841,378 rows</span>,
+            covering March 1 through March 31, 2026.
+        </p>
+
+        <p>
+            The baseline is intended to serve as the reference system against
+            which a future machine learning model can be evaluated on the same
+            validation design.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>5. Limitations</h2>
+
+        <p>
+            This project provides a simple baseline ranking system using
+            observed Google Search performance signals. It should not be
+            interpreted as proof that refreshing a page will improve rankings
+            or traffic.
+        </p>
+
+        <ul>
+            <li>
+                It uses only a small set of observed search signals.
+            </li>
+
+            <li>
+                It does not consider content quality, search intent,
+                backlinks, or technical SEO factors.
+            </li>
+
+            <li>
+                The same content page may appear multiple times because the
+                ranking is based on daily observations.
+            </li>
+
+            <li>
+                The results are observational and cannot establish
+                cause-and-effect relationships.
+            </li>
+
+            <li>
+                The baseline should be validated against a future evaluation
+                period and compared with stronger machine learning models.
+            </li>
+        </ul>
+
+        <p>
+            The recommendations should therefore be treated as
+            <strong>directional decision-support</strong>, not final business
+            decisions.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>6. Ranked Recommendations</h2>
+
+        <p>
+            The baseline creates an ordered queue for human review.
+            Pages receiving the <code>REVIEW_FOR_REFRESH</code> action are
+            candidates for further manual inspection.
+        </p>
+
+        <p>
+            Pages marked <code>MONITOR</code> have stronger observed positions
+            under the baseline and should generally be monitored rather than
+            immediately refreshed.
+        </p>
+
+        <p>
+            Pages marked <code>LOW_PRIORITY</code> have limited observed search
+            demand and are lower-priority candidates for review.
+        </p>
+
+        <p>
+            These labels are recommendations for inspection, not automatic
+            decisions.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>7. Reproducibility</h2>
+
+        <p>
+            The analysis is implemented in the project repository under
+            <code>work/notebooks/</code>.
+        </p>
+
+        <p>
+            The main capstone notebook contains the research question,
+            data description, methodology, baseline results, limitations,
+            ranked recommendations, and artifact generation.
+        </p>
+
+        <p>
+            The baseline queue is generated from the notebook rather than
+            relying on a manually edited result.
+        </p>
+    </section>
+
+
+    <section>
+        <h2>8. Acknowledgments & Data Credit</h2>
+
+        <p>
+            Built on the FlyRank ML Internship dataset.
+        </p>
+
+        <p>
+            This project was completed as part of the FlyRank Machine Learning
+            Internship track.
+        </p>
+    </section>
+
+
+    <footer>
+        <p>
+            Search Intelligence Capstone · Machine Learning
+        </p>
+    </footer>
+
+</main>
+
+</body>
+</html>
